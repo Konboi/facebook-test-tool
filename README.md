@@ -1,4 +1,3 @@
 # facebook-testuser-generator
 
-facebookのテストユーザージェネレーター
-
+facebookのテスト用のおれおれtool
