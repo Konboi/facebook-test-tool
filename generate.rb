@@ -3,7 +3,7 @@ require 'rubygems'
 require 'csv'
 require 'faraday'
 require 'yaml'
-
+require 'json'
 
 # load config 
 config = YAML.load_file("config/config.yml")
@@ -45,8 +45,23 @@ conn = Faraday.new(:url => url) do |builder|
   builder.use Faraday::Adapter::NetHttp     # Net/HTTP をアダプターに使う
 end
 
+# テストユーザー一覧取得
+result = conn.get do |req|
+  req.url "#{app_id}/accounts/test-users"
+  req.params[:access_token] = "#{$APP_ACCESS_TOKEN}"  
+end
+
+test_users = JSON.parse(result.body)["data"]
+
+test_users.each do |test_user|
+  puts test_user["access_token"]
+  puts test_user["id"]
+end
+
+
+# テストユーザー作成
 datas.each do |data|
-  conn.get do |req|
+  result = conn.get do |req|
     req.url "#{app_id}/accounts/test-users", {:installed => :true }
 
     req.params[:name]         = :"#{data[:name]}"
@@ -56,5 +71,18 @@ datas.each do |data|
     req.params[:access_token] = "#{$APP_ACCESS_TOKEN}"
   end
 end
+
+#test_user = JSON.parse(result.body)
+#p test_user
+# 
+#CSV.open("data/users.csv") do |write|
+#  write << ["facebook_id", "name", "password" , "access_token", "login_url"]
+#  write << [test_uesr["id"], datas.first["name"], test_user["password"], test_user["access_token"], test_user["login_url"]]
+#end
+
+
+
+
+
 
 
