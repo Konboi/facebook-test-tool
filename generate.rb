@@ -13,8 +13,6 @@ app_id     = config["facebook"]["app_id"]
 app_secret = config["facebook"]["app_secre"]
 
 
-$APP_ACCESS_TOKEN = "108446559324267|r2Jcg36Qg5LD8Ay0iVQvUTvjwks"
-
 def which_gender(gender=nil)
   if gender == "男"
     return 1
@@ -45,10 +43,22 @@ conn = Faraday.new(:url => url) do |builder|
   builder.use Faraday::Adapter::NetHttp     # Net/HTTP をアダプターに使う
 end
 
+#app_access_token の取得
+# https://developers.facebook.com/docs/technical-guides/opengraph/publishing-with-app-token/
+result = conn.get do |req|
+  req.url "oauth/access_token", { :client_id => config["facebook"]["app_id"] }
+
+  req.params[:client_secret] = config["facebook"]["app_secret"]
+  req.params[:grant_type] = :client_credentials
+end
+
+app_access_token = result.body.split("=")[1]
+
 # テストユーザー一覧取得
+# 
 result = conn.get do |req|
   req.url "#{app_id}/accounts/test-users"
-  req.params[:access_token] = "#{$APP_ACCESS_TOKEN}"  
+  req.params[:access_token] = app_access_token
 end
 
 test_users = JSON.parse(result.body)["data"]
@@ -58,7 +68,7 @@ test_users.each do |test_user|
   puts test_user["id"]
 end
 
-
+=begin
 # テストユーザー作成
 datas.each do |data|
   result = conn.get do |req|
@@ -68,7 +78,7 @@ datas.each do |data|
     req.params[:locale]       = :ja_JP
     req.params[:permissions]  = :read_stream
     req.params[:method]       = :post
-    req.params[:access_token] = "#{$APP_ACCESS_TOKEN}"
+    req.params[:access_token] = "#{app_access_token}"
   end
 end
 
@@ -80,9 +90,4 @@ end
 #  write << [test_uesr["id"], datas.first["name"], test_user["password"], test_user["access_token"], test_user["login_url"]]
 #end
 
-
-
-
-
-
-
+=end
